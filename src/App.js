@@ -1,48 +1,43 @@
-import React from "react";
+import { React, Suspense} from "react";
 import { Canvas } from "react-three-fiber";
-import { OrbitControls, Stars } from "drei";
-import { Physics, usePlane, useBox } from "use-cannon";
-import "./styles.css";
+import { OrbitControls, Html, useGLTFLoader } from "drei";
+import "./App.css";
+import Header from "./components/header";
+import { Section } from "./components/section";
 
-function Box() {
-  const [ref, api] = useBox(() => ({ mass: 1, position: [0, 2, 0] }));
-  return (
-    <mesh
-      onClick={() => {
-        api.velocity.set(0, 2, 0);
-      }}
-      ref={ref}
-      position={[0, 2, 0]}
-    >
-      <boxBufferGeometry attach="geometry" />
-      <meshLambertMaterial attach="material" color="hotpink" />
-    </mesh>
-  );
+const Model = () => {
+    const gltf = useGLTFLoader('/scene.gltf', true);
+    return (
+      <Suspense fallback={null}>
+      <primitive object={gltf.scene} />
+    </Suspense>
+    )
 }
 
-function Plane() {
-  const [ref] = usePlane(() => ({
-    rotation: [-Math.PI / 2, 0, 0],
-  }));
+const HTMLContent = () => {
   return (
-    <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeBufferGeometry attach="geometry" args={[100, 100]} />
-      <meshLambertMaterial attach="material" color="lightblue" />
-    </mesh>
-  );
+    <Section factor={1.5} offset={1}> 
+      <group position={[0,250,0]}> 
+        <mesh position={[0,-35,0]}> 
+          <Model/>
+        </mesh>
+        <Html fullscreen> 
+            <div className="container"> 
+              <h1 className="title"> Joe Mama </h1>
+            </div>
+        </Html>
+      </group>
+    </Section>
+  )
 }
 
 export default function App() {
   return (
-    <Canvas>
-      <OrbitControls />
-      <Stars />
-      <ambientLight intensity={0.5} />
-      <spotLight position={[10, 15, 10]} angle={0.3} />
-      <Physics>
-        <Box />
-        <Plane />
-      </Physics>
-    </Canvas>
+    <>
+      <Header />
+      <Canvas colorManagement camera={{position:[0,0,120], fov: 70}}>
+          <HTMLContent /> 
+      </Canvas>
+    </>
   );
 }
